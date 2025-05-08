@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title data-i18n="viewerTitle">DMTLabs 브로슈어</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles/viewer.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="styles/viewer.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.min.js"></script>
 </head>
 <body>
 <header>
-    <span class="back-btn" data-i18n="back" onclick="window.location.href = '/#lang=' + lang;">&larr; 뒤로</span>
-    <img src="assets/logo-Cz4p1NxY.png" alt="DMTLabs Logo" class="logo" onclick="window.open('https://www.dmtlabs.co.kr')">
+    <span id="back-btn" class="back-btn" data-i18n="back">&larr; 뒤로</span>
+    <img src="assets/logo-Cz4p1NxY.png" alt="DMTLabs Logo" class="logo"
+         onclick="window.open('https://www.dmtlabs.co.kr')">
     <!-- language switcher -->
     <!--suppress HtmlFormInputWithoutLabel -->
     <select id="langSwitcher"></select>
@@ -28,24 +29,25 @@
 
 <script>
     // re-use the exact same loader logic:
-    const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
+    const supported = ['ko', 'en', 'zh', 'ja', 'de', 'fr', 'it', 'es', 'pt', 'ru', 'pl', 'hu', 'vi', 'id', 'km'];
     const hash = location.hash.startsWith('#') ? location.hash.substring(1) : '';
     const params = new URLSearchParams(hash);
-    let lang       = params.get('lang') || navigator.language.toLowerCase() || 'en';
-    if (!supported.includes(lang)) lang = 'en';
+    let lang = params.get('lang') || navigator.language.toLowerCase() || 'ko';
+    if (!supported.includes(lang)) lang = 'ko';
 
     // build switcher
     const sel = document.getElementById('langSwitcher');
     supported.forEach(code => {
         const opt = document.createElement('option');
         opt.value = code;
-        opt.text  = code.toUpperCase();
+        opt.text = code.toUpperCase();
         if (code === lang) opt.selected = true;
         sel.append(opt);
     });
     sel.addEventListener('change', e => {
         params.set('lang', e.target.value);
         window.location.hash = params.toString();
+        window.location.reload();
     });
 
     // translate UI strings
@@ -63,12 +65,15 @@
     const fileKey = params.get('file');
     const mapping = {
         brochure: 'assets/dmtlabs-company-brochure.pdf',
-        catalog : 'assets/dmtlabs-product-catalog.pdf'
+        catalog: 'assets/dmtlabs-product-catalog.pdf'
     };
     const pdfFile = mapping[fileKey] || mapping.brochure;
     document.getElementById('download-btn').onclick = () => {
         window.open(pdfFile, '_blank');
     };
+    document.getElementById('back-btn').onclick = () => {
+
+    }
 </script>
 <!-- PDF.js + carousel rendering -->
 <script>
@@ -76,10 +81,10 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.worker.min.js';
 
-    const container     = document.getElementById('pdf-container');
-    const prevBtn       = document.getElementById('prev-page');
-    const nextBtn       = document.getElementById('next-page');
-    const pageNumElem   = document.getElementById('page-num');
+    const container = document.getElementById('pdf-container');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageNumElem = document.getElementById('page-num');
     const pageCountElem = document.getElementById('page-count');
 
     let pdfDoc, pageCount;
@@ -89,14 +94,14 @@
     // helper to render one page into its canvas
     function renderSinglePage(pageNum, canvas) {
         return pdfDoc.getPage(pageNum).then(page => {
-            const rawVp   = page.getViewport({ scale: 1 });
-            const availH  = window.innerHeight - 65;
-            const scaleW  = window.innerWidth  / rawVp.width;
-            const scaleH  = availH             / rawVp.height;
-            const scale   = Math.min(scaleW, scaleH);
-            const vp      = page.getViewport({ scale });
+            const rawVp = page.getViewport({scale: 1});
+            const availH = window.innerHeight - 65;
+            const scaleW = window.innerWidth / rawVp.width;
+            const scaleH = availH / rawVp.height;
+            const scale = Math.min(scaleW, scaleH);
+            const vp = page.getViewport({scale});
 
-            canvas.width  = vp.width;
+            canvas.width = vp.width;
             canvas.height = vp.height;
             return page.render({
                 canvasContext: canvas.getContext('2d'),
@@ -120,7 +125,7 @@
             container.appendChild(slide);
 
             // store for later resize
-            slides.push({ num, canvas });
+            slides.push({num, canvas});
 
             // initial render
             renderSinglePage(num, canvas);
@@ -140,15 +145,15 @@
 
         // Prev/Next handlers
         prevBtn.addEventListener('click', () => {
-            container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
+            container.scrollBy({left: -container.clientWidth, behavior: 'smooth'});
         });
         nextBtn.addEventListener('click', () => {
-            container.scrollBy({ left:  container.clientWidth, behavior: 'smooth' });
+            container.scrollBy({left: container.clientWidth, behavior: 'smooth'});
         });
 
         // **auto‐resize**: re-render every slide on window resize
         window.addEventListener('resize', () => {
-            slides.forEach(({ num, canvas }) => {
+            slides.forEach(({num, canvas}) => {
                 renderSinglePage(num, canvas);
             });
         });
@@ -156,7 +161,7 @@
         const hammer = new Hammer(container);
 
         // configure to detect only horizontal swipes
-        hammer.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+        hammer.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
 
         hammer.on('swipeleft', () => {
             // your existing “next” logic, e.g.:

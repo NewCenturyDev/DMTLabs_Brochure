@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title data-i18n="title">DMTLabs 브로슈어</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles/main.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="styles/main.css"/>
 </head>
 <body>
 <header>
@@ -42,10 +42,10 @@
 </div>
 <script>
     // i18n runtime loader
-    const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
+    const supported = ['ko', 'en', 'zh', 'ja', 'de', 'fr', 'it', 'es', 'pt', 'ru', 'pl', 'hu', 'vi', 'id', 'km'];
     const hash = location.hash.startsWith('#') ? location.hash.substring(1) : '';
     const params = new URLSearchParams(hash);
-    let lang       = params.get('lang') || navigator.language.toLowerCase() || 'ko';
+    let lang = params.get('lang') || navigator.language.toLowerCase() || 'ko';
     if (!supported.includes(lang)) lang = 'ko';
 
     // build switcher
@@ -53,13 +53,14 @@
     supported.forEach(code => {
         const opt = document.createElement('option');
         opt.value = code;
-        opt.text  = code.toUpperCase();
+        opt.text = code.toUpperCase();
         if (code === lang) opt.selected = true;
         sel.append(opt);
     });
     sel.addEventListener('change', e => {
         params.set('lang', e.target.value);
         window.location.hash = params.toString();
+        window.location.reload();
     });
 
     // load dictionary
@@ -82,10 +83,10 @@
     };
 </script>
 <script>
-    document.getElementById('show-brochure').onclick = function() {
+    document.getElementById('show-brochure').onclick = function () {
         window.location.href = '/viewer#file=brochure&lang=' + lang;
     };
-    document.getElementById('show-catalog').onclick = function() {
+    document.getElementById('show-catalog').onclick = function () {
         window.location.href = '/viewer#file=catalog&lang=' + lang;
     };
     document.getElementById('download-brochure').onclick = () => {
