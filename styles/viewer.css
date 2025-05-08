@@ -1,0 +1,124 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: kopub-dotum-normal, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 0 20px;
+}
+.back-btn {
+    position: absolute;
+    left: 20px;
+    text-decoration: none;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.logo {
+    height: 60px;
+    cursor: pointer;
+}
+.download-btn {
+    position: absolute;
+    right: 20px;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: #00bfa5;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    @media (max-width: 599px) {
+        position: fixed;
+        top: 80px;
+        background-color: rgba(0, 191, 165, 0.5);
+    }
+}
+/* carousel container */
+#pdf-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    height: calc(100vh - 65px);
+    cursor: grab;
+    touch-action: pan-y;            /* ← only allow native *vertical* pans */
+    overscroll-behavior-x: contain; /* ← stop rubber-banding/bubbling on X */
+    user-select: none;              /* ← no accidental text selects */
+}
+#pdf-container::-webkit-scrollbar { display: none; }
+#pdf-container:active {
+    cursor: grabbing;
+}
+
+/* each page slide */
+.carousel-item {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.carousel-item canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* simple control styling */
+.pdf-controls {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pdf-controls div {
+    display: flex;
+    width: 210px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(155, 176, 201, 0.2);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.pdf-controls span {
+    font-size: 14px;
+    font-family: kopub-dotum-light, Arial, sans-serif;
+    margin: 0 5px;
+}
+
+.pdf-controls button {
+    padding: 0.25em 0.5em;
+}
+
+@font-face {
+    font-family: 'kopub-dotum-bold';
+    font-weight: bold;
+    src: url('../assets/KoPubWorld-Dotum-Bold.woff');
+}
+@font-face {
+    font-family: 'kopub-dotum-medium';
+    font-weight: bold;
+    src: url('../assets/KoPubWorld-Dotum-Medium.woff');
+}
+@font-face {
+    font-family: 'kopub-dotum-light';
+    font-weight: bold;
+    src: url('../assets/KoPubWorld-Dotum-Light.woff');
+}

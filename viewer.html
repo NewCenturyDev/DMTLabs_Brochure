@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="viewerTitle">DMTLabs 브로슈어</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/viewer.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.min.js"></script>
+</head>
+<body>
+<header>
+    <span class="back-btn" data-i18n="back" onclick="history.back()">&larr; 뒤로</span>
+    <img src="assets/logo-Cz4p1NxY.png" alt="DMTLabs Logo" class="logo" onclick="window.open('https://www.dmtlabs.co.kr')">
+    <!-- language switcher -->
+    <!--suppress HtmlFormInputWithoutLabel -->
+    <select id="langSwitcher"></select>
+    <button class="download-btn" id="download-btn" data-i18n="download">PDF 다운로드</button>
+</header>
+<main id="pdf-container"></main>
+<div class="pdf-controls">
+    <div>
+        <button id="prev-page" disabled>‹</button>
+        <span><span id="page-num">1</span> / <span id="page-count">0</span></span>
+        <button id="next-page" disabled>›</button>
+    </div>
+</div>
+
+<script>
+    // re-use the exact same loader logic:
+    const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
+    const params   = new URLSearchParams(location.search);
+    let lang       = params.get('lang') || navigator.language.toLowerCase() || 'en';
+    if (!supported.includes(lang)) lang = 'en';
+
+    // build switcher
+    const sel = document.getElementById('langSwitcher');
+    supported.forEach(code => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.text  = code.toUpperCase();
+        if (code === lang) opt.selected = true;
+        sel.append(opt);
+    });
+    sel.addEventListener('change', e => {
+        params.set('lang', e.target.value);
+        location.search = params.toString();
+    });
+
+    // translate UI strings
+    fetch(`/locales/${lang}.json`)
+        .then(r => r.json())
+        .then(dict => {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+        })
+        .catch(console.error);
+
+    // existing PDF logic, preserving lang in links
+    const fileKey = params.get('file');
+    const mapping = {
+        brochure: 'assets/dmtlabs-company-brochure.pdf',
+        catalog : 'assets/dmtlabs-product-catalog.pdf'
+    };
+    const pdfFile = mapping[fileKey] || mapping.brochure;
+    document.getElementById('download-btn').onclick = () => {
+        window.open(pdfFile, '_blank');
+    };
+</script>
+<!-- PDF.js + carousel rendering -->
+<script>
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.3.122/pdf.worker.min.js';
+
+    const container     = document.getElementById('pdf-container');
+    const prevBtn       = document.getElementById('prev-page');
+    const nextBtn       = document.getElementById('next-page');
+    const pageNumElem   = document.getElementById('page-num');
+    const pageCountElem = document.getElementById('page-count');
+
+    let pdfDoc, pageCount;
+    // keep an array of { num, canvas } so we can re-render on resize
+    const slides = [];
+
+    // helper to render one page into its canvas
+    function renderSinglePage(pageNum, canvas) {
+        return pdfDoc.getPage(pageNum).then(page => {
+            const rawVp   = page.getViewport({ scale: 1 });
+            const availH  = window.innerHeight - 65;
+            const scaleW  = window.innerWidth  / rawVp.width;
+            const scaleH  = availH             / rawVp.height;
+            const scale   = Math.min(scaleW, scaleH);
+            const vp      = page.getViewport({ scale });
+
+            canvas.width  = vp.width;
+            canvas.height = vp.height;
+            return page.render({
+                canvasContext: canvas.getContext('2d'),
+                viewport: vp
+            }).promise;
+        });
+    }
+
+    pdfjsLib.getDocument(pdfFile).promise.then(doc => {
+        pdfDoc = doc;
+        pageCount = doc.numPages;
+        pageCountElem.textContent = pageCount;
+
+        // create slides
+        for (let num = 1; num <= pageCount; num++) {
+            const slide = document.createElement('div');
+            slide.className = 'carousel-item';
+
+            const canvas = document.createElement('canvas');
+            slide.appendChild(canvas);
+            container.appendChild(slide);
+
+            // store for later resize
+            slides.push({ num, canvas });
+
+            // initial render
+            renderSinglePage(num, canvas);
+        }
+
+        // enable buttons
+        prevBtn.disabled = false;
+        nextBtn.disabled = (pageCount <= 1);
+
+        // update page indicator on scroll
+        container.addEventListener('scroll', () => {
+            const idx = Math.round(container.scrollLeft / container.clientWidth);
+            pageNumElem.textContent = (idx + 1).toString();
+            prevBtn.disabled = (idx === 0);
+            nextBtn.disabled = (idx === pageCount - 1);
+        });
+
+        // Prev/Next handlers
+        prevBtn.addEventListener('click', () => {
+            container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
+        });
+        nextBtn.addEventListener('click', () => {
+            container.scrollBy({ left:  container.clientWidth, behavior: 'smooth' });
+        });
+
+        // **auto‐resize**: re-render every slide on window resize
+        window.addEventListener('resize', () => {
+            slides.forEach(({ num, canvas }) => {
+                renderSinglePage(num, canvas);
+            });
+        });
+        // assume `container` is your <main id="pdf-container">
+        const hammer = new Hammer(container);
+
+        // configure to detect only horizontal swipes
+        hammer.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+
+        hammer.on('swipeleft', () => {
+            // your existing “next” logic, e.g.:
+            nextBtn.click();
+        });
+
+        hammer.on('swiperight', () => {
+            // your existing “prev” logic
+            prevBtn.click();
+        });
+    }).catch(err => {
+        console.error(err);
+        container.innerHTML = '<p>PDF 로드 중 오류가 발생했습니다.</p>';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="title">DMTLabs 브로슈어</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+<header>
+    <img src="assets/logo-Cz4p1NxY.png" alt="DMTLabs Logo" onclick="window.open('https://www.dmtlabs.co.kr','_blank')">
+    <!-- language switcher -->
+    <!--suppress HtmlFormInputWithoutLabel -->
+    <select id="langSwitcher"></select>
+</header>
+
+<div class="tile-container">
+    <div class="tile tile-top" id="show-brochure">
+        <img class="infographic"
+             src="assets/infographic-brochure.png"
+             alt="회사 브로슈어">
+        <span data-i18n="showBrochure">회사 브로슈어 보기</span>
+    </div>
+    <div class="tile tile-top" id="show-catalog">
+        <img class="infographic"
+             src="assets/infographic-catalog.png"
+             alt="제품 카탈로그">
+        <span data-i18n="showCatalog">제품 카탈로그 보기</span>
+    </div>
+    <div class="tile tile-bottom" id="download-brochure">
+        <img class="infographic"
+             src="assets/infographic-brochure-download.png"
+             alt="브로슈어 다운로드">
+        <p data-i18n="downloadBrochure">회사 브로슈어 다운로드</p>
+    </div>
+    <div class="tile tile-bottom" id="download-catalog">
+        <img class="infographic"
+             src="assets/infographic-catalog-download.png"
+             alt="카탈로그 다운로드">
+        <p data-i18n="downloadCatalog">제품 카탈로그 다운로드</p>
+    </div>
+</div>
+<script>
+    // i18n runtime loader
+    const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
+    const params   = new URLSearchParams(location.search);
+    let lang       = params.get('lang') || navigator.language.toLowerCase() || 'ko';
+    if (!supported.includes(lang)) lang = 'ko';
+
+    // build switcher
+    const sel = document.getElementById('langSwitcher');
+    supported.forEach(code => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.text  = code.toUpperCase();
+        if (code === lang) opt.selected = true;
+        sel.append(opt);
+    });
+    sel.addEventListener('change', e => {
+        params.set('lang', e.target.value);
+        location.search = params.toString();
+    });
+
+    // load dictionary
+    fetch(`/locales/${lang}.json`)
+        .then(r => r.json())
+        .then(dict => {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+        })
+        .catch(console.error);
+
+    // keep your existing click handlers
+    document.getElementById('show-brochure').onclick = () => {
+        location.href = 'viewer.html?file=brochure&lang=' + lang;
+    };
+    document.getElementById('show-catalog').onclick = () => {
+        location.href = 'viewer.html?file=catalog&lang=' + lang;
+    };
+</script>
+<script>
+    document.getElementById('show-brochure').onclick = function() {
+        window.location.href = 'viewer.html?file=brochure&lang=' + lang;
+    };
+    document.getElementById('show-catalog').onclick = function() {
+        window.location.href = 'viewer.html?file=catalog&lang=' + lang;
+    };
+    document.getElementById('download-brochure').onclick = () => {
+        window.open("assets/dmtlabs-company-brochure.pdf", '_blank');
+    }
+    document.getElementById('download-catalog').onclick = () => {
+        window.open("assets/dmtlabs-product-catalog.pdf", '_blank');
+    }
+</script>
+</body>
+</html>
