@@ -10,7 +10,7 @@
 </head>
 <body>
 <header>
-    <span class="back-btn" data-i18n="back" onclick="history.back()">&larr; 뒤로</span>
+    <span class="back-btn" data-i18n="back" onclick="window.location.href = '/#lang=' + lang;">&larr; 뒤로</span>
     <img src="assets/logo-Cz4p1NxY.png" alt="DMTLabs Logo" class="logo" onclick="window.open('https://www.dmtlabs.co.kr')">
     <!-- language switcher -->
     <!--suppress HtmlFormInputWithoutLabel -->
@@ -29,7 +29,8 @@
 <script>
     // re-use the exact same loader logic:
     const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
-    const params   = new URLSearchParams(location.search);
+    const hash = location.hash.startsWith('#') ? location.hash.substring(1) : '';
+    const params = new URLSearchParams(hash);
     let lang       = params.get('lang') || navigator.language.toLowerCase() || 'en';
     if (!supported.includes(lang)) lang = 'en';
 
@@ -44,7 +45,7 @@
     });
     sel.addEventListener('change', e => {
         params.set('lang', e.target.value);
-        location.search = params.toString();
+        window.location.hash = params.toString();
     });
 
     // translate UI strings

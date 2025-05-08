@@ -43,7 +43,8 @@
 <script>
     // i18n runtime loader
     const supported = ['ko','en','zh','ja','de','fr','it','es','pt','ru','pl','hu','vi','id','km'];
-    const params   = new URLSearchParams(location.search);
+    const hash = location.hash.startsWith('#') ? location.hash.substring(1) : '';
+    const params = new URLSearchParams(hash);
     let lang       = params.get('lang') || navigator.language.toLowerCase() || 'ko';
     if (!supported.includes(lang)) lang = 'ko';
 
@@ -58,7 +59,7 @@
     });
     sel.addEventListener('change', e => {
         params.set('lang', e.target.value);
-        location.search = params.toString();
+        window.location.hash = params.toString();
     });
 
     // load dictionary
@@ -74,18 +75,18 @@
 
     // keep your existing click handlers
     document.getElementById('show-brochure').onclick = () => {
-        location.href = 'viewer.html?file=brochure&lang=' + lang;
+        location.href = '/viewer#file=brochure&lang=' + lang;
     };
     document.getElementById('show-catalog').onclick = () => {
-        location.href = 'viewer.html?file=catalog&lang=' + lang;
+        location.href = '/viewer#file=catalog&lang=' + lang;
     };
 </script>
 <script>
     document.getElementById('show-brochure').onclick = function() {
-        window.location.href = 'viewer.html?file=brochure&lang=' + lang;
+        window.location.href = '/viewer#file=brochure&lang=' + lang;
     };
     document.getElementById('show-catalog').onclick = function() {
-        window.location.href = 'viewer.html?file=catalog&lang=' + lang;
+        window.location.href = '/viewer#file=catalog&lang=' + lang;
     };
     document.getElementById('download-brochure').onclick = () => {
         window.open("assets/dmtlabs-company-brochure.pdf", '_blank');
