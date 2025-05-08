@@ -41,25 +41,12 @@
         const opt = document.createElement('option');
         opt.value = code;
         opt.text = code.toUpperCase();
-        if (code === lang) opt.selected = true;
         sel.append(opt);
     });
     sel.addEventListener('change', e => {
         params.set('lang', e.target.value);
         window.location.hash = params.toString();
-        window.location.reload();
     });
-
-    // translate UI strings
-    fetch(`/locales/${lang}.json`)
-        .then(r => r.json())
-        .then(dict => {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.textContent = dict[key];
-            });
-        })
-        .catch(console.error);
 
     // existing PDF logic, preserving lang in links
     const fileKey = params.get('file');
@@ -72,8 +59,29 @@
         window.open(pdfFile, '_blank');
     };
     document.getElementById('back-btn').onclick = () => {
-
+        window.location.href = '/#lang=' + lang;
     }
+
+    function initI18N() {
+        const hash = location.hash.startsWith('#') ? location.hash.substring(1) : '';
+        const params = new URLSearchParams(hash);
+        lang = params.get('lang') || navigator.language.toLowerCase() || 'ko';
+        if (!supported.includes(lang)) lang = 'ko';
+        sel.value = lang;
+
+        fetch(`/locales/${lang}.json`)
+            .then(r => r.json())
+            .then(dict => {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) el.textContent = dict[key];
+                });
+            })
+            .catch(console.error);
+    }
+
+    window.addEventListener('hashchange', initI18N);
+    window.addEventListener('load', initI18N);
 </script>
 <!-- PDF.js + carousel rendering -->
 <script>
